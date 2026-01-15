@@ -1,3 +1,4 @@
+from app.services.ai_service import load_model_once
 from fastapi import FastAPI
 from app.api.v1 import (
     auth,
@@ -12,6 +13,7 @@ from app.api.v1 import (
     metrics,
     
 )
+
 
 app = FastAPI(
     title="VisionCare API",
@@ -32,3 +34,7 @@ app.include_router(metrics.router, prefix="/api/v1")
 @app.get("/")
 def health_check():
     return {"status": "ok"}
+
+@app.on_event("startup")
+def startup_event():
+    load_model_once()
