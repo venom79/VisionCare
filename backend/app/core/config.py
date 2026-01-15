@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     MODEL_URL: str
+    HF_ML_ENDPOINT: str
 
     class Config:
         env_file = ".env"

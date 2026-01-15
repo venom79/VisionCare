@@ -1,7 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.services.ai_service import run_inference
 from app.services.explanation_service import cataract_decision
 from app.models.referral import Referral
 from app.services.referral_service import create_referral_data
@@ -11,7 +10,8 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from app.api.deps import get_current_user
 from app.services.trend_service import calculate_trend
-
+from app.services.ml_client import predict_image
+import os
 
 
 router = APIRouter(prefix="/screenings", tags=["Screenings"])
@@ -33,7 +33,7 @@ def create_screening(
         shutil.copyfileobj(file.file, buffer)
 
     # 1️⃣ Run model
-    probs = run_inference(str(file_path))
+    probs = predict_image(str(file_path))
 
     # 2️⃣ Build decision
     decision = cataract_decision(probs["prob_cataract"])
@@ -90,6 +90,8 @@ def create_screening(
             "specialty": referral_data["specialty"],
             "urgency": referral_data["urgency"]
         }
+
+    os.remove(file_path)
 
     return response
 
