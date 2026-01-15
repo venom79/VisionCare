@@ -1,0 +1,62 @@
+# ===============================
+# DATASETS (CRITICAL)
+# ===============================
+dataset/
+datasets/
+data/
+
+# ===============================
+# Python
+# ===============================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ===============================
+# Virtual Environments
+# ===============================
+backend/venv/
+venv/
+.env
+.env.*
+.env.local
+
+# ===============================
+# Jupyter / ML
+# ===============================
+.ipynb_checkpoints/
+*.ipynb
+*.h5
+*.keras
+*.onnx
+*.pt
+*.pth
+
+# ===============================
+# Uploaded / Generated Files
+# ===============================
+backend/uploads/
+uploads/
+*.log
+
+# ===============================
+# OS / Editor
+# ===============================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ===============================
+# Database / Alembic
+# ===============================
+*.sqlite3
+backend/alembic/versions/__pycache__/
+
+# ===============================
+# Cache / Test
+# ===============================
+.cache/
+.pytest_cache/
