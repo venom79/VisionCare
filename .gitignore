@@ -15,7 +15,7 @@ __pycache__/
 .Python
 
 # ===============================
-# Virtual Environments
+# Virtual Environments / Env
 # ===============================
 backend/venv/
 venv/
@@ -24,7 +24,7 @@ venv/
 .env.local
 
 # ===============================
-# Jupyter / ML
+# Jupyter / ML Models
 # ===============================
 .ipynb_checkpoints/
 *.ipynb
@@ -42,15 +42,7 @@ uploads/
 *.log
 
 # ===============================
-# OS / Editor
-# ===============================
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
-
-# ===============================
-# Database / Alembic
+# Database
 # ===============================
 *.sqlite3
 backend/alembic/versions/__pycache__/
@@ -60,3 +52,41 @@ backend/alembic/versions/__pycache__/
 # ===============================
 .cache/
 .pytest_cache/
+
+# ===============================
+# OS / Editors
+# ===============================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# ===============================
+# Flutter / Dart
+# ===============================
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+coverage/
+
+# ===============================
+# Flutter iOS / Android build
+# ===============================
+**/ios/Flutter/.last_build_id
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+
+# ===============================
+# Flutter misc
+# ===============================
+*.class
+*.swp
+*.iml
+*.ipr
+*.iws
+app.*.symbols
+app.*.map.json
