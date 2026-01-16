@@ -15,14 +15,18 @@ from app.api.v1 import (
     
 )
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+UPLOADS_DIR = BASE_DIR / "uploads"
+
+
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+
 
 app = FastAPI(
     title="VisionCare API",
     version="1.0.0"
 )
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-UPLOADS_DIR = BASE_DIR / "uploads"
 
 app.mount(
     "/uploads",
