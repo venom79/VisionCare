@@ -1,5 +1,6 @@
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from app.api.v1 import (
     auth,
     doctor,
@@ -19,6 +20,7 @@ app = FastAPI(
     title="VisionCare API",
     version="1.0.0"
 )
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
