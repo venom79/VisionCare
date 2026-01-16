@@ -159,12 +159,13 @@ def get_screening_detail(
         .filter(Screening.id == screening_id)
         .first()
     )
-
+    
     if not screening:
         raise HTTPException(status_code=404, detail="Screening not found")
 
-    if screening.patient_id != user.id:
+    if user.role.upper() != "DOCTOR" and screening.patient_id != user.id:
         raise HTTPException(status_code=403, detail="Access denied")
+
 
     referral = (
         db.query(Referral)
