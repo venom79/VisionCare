@@ -91,8 +91,6 @@ def create_screening(
             "urgency": referral_data["urgency"]
         }
 
-    os.remove(file_path)
-
     return response
 
 @router.get("/my")

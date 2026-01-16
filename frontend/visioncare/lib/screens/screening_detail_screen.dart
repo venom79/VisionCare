@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/history_service.dart';
+import '../services/auth_service.dart';
+import '../services/doctor_service.dart';
 
 class ScreeningDetailScreen extends StatefulWidget {
   final String screeningId;
@@ -15,18 +17,117 @@ class ScreeningDetailScreen extends StatefulWidget {
 
 class _ScreeningDetailScreenState extends State<ScreeningDetailScreen> {
   late Future<Map<String, dynamic>> _detailFuture;
+  bool _isDoctor = false;
+
+  static const String _baseUrl = 'https://visioncare.onrender.com';
 
   @override
   void initState() {
     super.initState();
     _detailFuture =
         HistoryService.getScreeningDetail(widget.screeningId);
+    _loadRole();
+  }
+
+  Future<void> _loadRole() async {
+    final role = await AuthService.getUserRole();
+    if (!mounted) return;
+    setState(() {
+      _isDoctor = role == 'DOCTOR';
+    });
   }
 
   String _formatDate(String iso) {
     final dt = DateTime.parse(iso);
     return '${dt.day}/${dt.month}/${dt.year} '
         '${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+  }
+
+  void _showReviewDialog() {
+    final decisionController = TextEditingController();
+    final notesController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Review Screening'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: decisionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Decision',
+                    hintText: 'e.g. Cataract Confirmed',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: notesController,
+                  maxLines: 4,
+                  decoration: const InputDecoration(
+                    labelText: 'Notes',
+                    hintText: 'Clinical notes...',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final decision = decisionController.text.trim();
+                final notes = notesController.text.trim();
+
+                if (decision.isEmpty || notes.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Decision and notes are required'),
+                    ),
+                  );
+                  return;
+                }
+
+                final success = await DoctorService.submitReview(
+                  screeningId: widget.screeningId,
+                  decision: decision,
+                  notes: notes,
+                );
+
+                if (!mounted) return;
+
+                Navigator.pop(context);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success
+                          ? 'Review submitted successfully'
+                          : 'Failed to submit review',
+                    ),
+                  ),
+                );
+
+                if (success) {
+                  setState(() {
+                    _detailFuture =
+                        HistoryService.getScreeningDetail(
+                          widget.screeningId,
+                        );
+                  });
+                }
+              },
+              child: const Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -42,7 +143,7 @@ class _ScreeningDetailScreenState extends State<ScreeningDetailScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (snapshot.hasError) {
+          if (snapshot.hasError || !snapshot.hasData) {
             return const Center(
               child: Text(
                 'Failed to load screening details',
@@ -55,13 +156,42 @@ class _ScreeningDetailScreenState extends State<ScreeningDetailScreen> {
           final decision = data['decision'];
           final referral = data['referral'];
           final doctorReview = data['doctor_review'];
+          final rawImagePath = data['image_url'];
+
+          String? imageUrl;
+          if (rawImagePath != null && rawImagePath is String) {
+            imageUrl =
+                '$_baseUrl/${rawImagePath.replaceAll('\\', '/')}';
+          }
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ================= BASIC INFO =================
+                // ================= IMAGE =================
+                if (imageUrl != null) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      imageUrl,
+                      width: double.infinity,
+                      height: 220,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) {
+                        return const Center(
+                          child: Text(
+                            'Failed to load image',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+
+                // ================= RESULT =================
                 Text(
                   'Result',
                   style: Theme.of(context).textTheme.titleMedium,
@@ -75,7 +205,7 @@ class _ScreeningDetailScreenState extends State<ScreeningDetailScreen> {
                     color: _resultColor(decision?['result'] ?? ''),
                   ),
                 ),
-                
+
                 const SizedBox(height: 10),
 
                 Text(
@@ -84,7 +214,6 @@ class _ScreeningDetailScreenState extends State<ScreeningDetailScreen> {
                 ),
 
                 const SizedBox(height: 12),
-
                 Text(decision['message'] ?? ''),
 
                 const Divider(height: 30),
@@ -145,6 +274,16 @@ class _ScreeningDetailScreenState extends State<ScreeningDetailScreen> {
                   'Created at: ${_formatDate(data['created_at'])}',
                   style: const TextStyle(fontSize: 12),
                 ),
+
+                // ================= DOCTOR ACTION =================
+                if (_isDoctor) ...[
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: _showReviewDialog,
+                    icon: const Icon(Icons.rate_review),
+                    label: const Text('Review Screening'),
+                  ),
+                ],
               ],
             ),
           );
@@ -155,20 +294,9 @@ class _ScreeningDetailScreenState extends State<ScreeningDetailScreen> {
 
   Color _resultColor(String result) {
     final r = result.toLowerCase();
-
-    if (r.contains('normal')) {
-      return Colors.green;
-    }
-
-    if (r.contains('possible')) {
-      return Colors.orange;
-    }
-
-    if (r.contains('cataract')) {
-      return Colors.redAccent;
-    }
-
+    if (r.contains('normal')) return Colors.green;
+    if (r.contains('possible')) return Colors.orange;
+    if (r.contains('cataract')) return Colors.redAccent;
     return Colors.grey;
   }
-
 }

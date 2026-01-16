@@ -25,4 +25,33 @@ class DoctorService {
       throw Exception('Failed to load pending reviews');
     }
   }
+
+  static Future<bool> submitReview({
+    required String screeningId,
+    required String decision,
+    required String notes,
+  }) async {
+    final token = await AuthService.getToken();
+
+    if (token == null) {
+      throw Exception('Not authenticated');
+    }
+
+    final response = await http.post(
+      Uri.parse(
+        '$_baseUrl/api/v1/doctor/screenings/$screeningId/review',
+      ),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'decision': decision,
+        'notes': notes,
+      }),
+    );
+
+    return response.statusCode == 200 || response.statusCode == 201;
+  }
+
 }
