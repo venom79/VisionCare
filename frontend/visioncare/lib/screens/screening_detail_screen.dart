@@ -162,7 +162,10 @@ class _ScreeningDetailScreenState extends State<ScreeningDetailScreen> {
           if (rawImagePath != null && rawImagePath is String) {
             imageUrl =
                 '$_baseUrl/${rawImagePath.replaceAll('\\', '/')}';
+                debugPrint('IMAGE URL => $imageUrl');
           }
+
+
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),

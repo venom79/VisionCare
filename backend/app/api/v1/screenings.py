@@ -16,7 +16,8 @@ import os
 
 router = APIRouter(prefix="/screenings", tags=["Screenings"])
 
-UPLOAD_DIR = Path("uploads")
+BASE_DIR = Path(__file__).resolve().parent.parent
+UPLOAD_DIR = BASE_DIR / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 @router.post("/")

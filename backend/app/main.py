@@ -1,4 +1,4 @@
-
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from app.api.v1 import (
@@ -20,7 +20,15 @@ app = FastAPI(
     title="VisionCare API",
     version="1.0.0"
 )
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+UPLOADS_DIR = BASE_DIR / "uploads"
+
+app.mount(
+    "/uploads",
+    StaticFiles(directory=UPLOADS_DIR),
+    name="uploads",
+)
 
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
