@@ -7,7 +7,11 @@
   ],
   "routes": [
     {
-      "src": "/(.*\\.(js|css|png|jpg|jpeg|svg|ico|json|woff|woff2))",
+      "src": "/assets/(.*)",
+      "dest": "/build/web/assets/$1"
+    },
+    {
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|svg|ico|json|woff|woff2|ttf|otf))",
       "dest": "/build/web/$1"
     },
     {
