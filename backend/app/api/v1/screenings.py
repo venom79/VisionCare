@@ -1,48 +1,79 @@
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
+from fastapi import APIRouter, UploadFile, File, Depends
 from sqlalchemy.orm import Session
-from app.core.database import get_db
-from app.services.explanation_service import cataract_decision
-from app.models.referral import Referral
-from app.services.referral_service import create_referral_data
-from app.models.screening import Screening
-import uuid, shutil
-from pathlib import Path
 from datetime import datetime, timedelta
-from app.api.deps import get_current_user
-from app.services.trend_service import calculate_trend
-from app.services.ml_client import predict_image
+from pathlib import Path
+import uuid
+import shutil
 import os
+
+import cloudinary
+import cloudinary.uploader
+
+from app.core.database import get_db
+from app.core.config import settings
+from app.api.deps import get_current_user
+from app.models.screening import Screening
+from app.models.referral import Referral
+from app.services.explanation_service import cataract_decision
+from app.services.referral_service import create_referral_data
+from app.services.ml_client import predict_image
 
 
 router = APIRouter(prefix="/screenings", tags=["Screenings"])
 
+
+# ================= CLOUDINARY CONFIG =================
+cloudinary.config(
+    cloud_name=settings.CLOUDINARY_CLOUD_NAME,
+    api_key=settings.CLOUDINARY_API_KEY,
+    api_secret=settings.CLOUDINARY_API_SECRET,
+)
+
+
+# ================= TEMP DIRECTORY (ML ONLY) =================
 BASE_DIR = Path(__file__).resolve().parent.parent
 UPLOAD_DIR = BASE_DIR / "uploads"
-UPLOAD_DIR.mkdir(exist_ok=True)
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
 
 @router.post("/")
 def create_screening(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    user = Depends(get_current_user),
+    user=Depends(get_current_user),
 ):
-
+    # ================= 1️⃣ SAVE TEMP FILE =================
     file_id = f"{uuid.uuid4()}.jpg"
     file_path = UPLOAD_DIR / file_id
 
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # 1️⃣ Run model
-    probs = predict_image(str(file_path))
+    try:
+        # ================= 2️⃣ RUN ML MODEL =================
+        probs = predict_image(str(file_path))
 
-    # 2️⃣ Build decision
-    decision = cataract_decision(probs["prob_cataract"])
+        # ================= 3️⃣ DECISION =================
+        decision = cataract_decision(probs["prob_cataract"])
 
-    # 3️⃣ Persist
+        # ================= 4️⃣ UPLOAD TO CLOUDINARY =================
+        upload_result = cloudinary.uploader.upload(
+            str(file_path),
+            folder="visioncare/screenings",
+            resource_type="image",
+        )
+
+        image_url = upload_result["secure_url"]
+
+    finally:
+        # ================= 5️⃣ CLEAN TEMP FILE =================
+        if file_path.exists():
+            os.remove(file_path)
+
+    # ================= 6️⃣ SAVE SCREENING =================
     screening = Screening(
         patient_id=user.id,
-        image_url=str(file_path),
+        image_url=image_url,  # ✅ CLOUDINARY URL
         prob_normal=probs["prob_normal"],
         prob_cataract=probs["prob_cataract"],
         result=decision["result"],
@@ -50,16 +81,15 @@ def create_screening(
         confidence_level=decision["confidence_level"],
         explanation={"message": decision["message"]},
     )
-    
-    level = screening.confidence_level.upper()
 
-    if level in ["MEDIUM", "HIGH"]:
+    if screening.confidence_level.upper() in ["MEDIUM", "HIGH"]:
         screening.next_followup_due = datetime.utcnow() + timedelta(days=30)
 
     db.add(screening)
-    db.commit() 
+    db.commit()
     db.refresh(screening)
 
+    # ================= 7️⃣ REFERRAL =================
     referral_data = create_referral_data(screening.confidence_level)
 
     if referral_data:
@@ -72,10 +102,10 @@ def create_screening(
         db.add(referral)
         db.commit()
 
-
-    # 4️⃣ API response
+    # ================= 8️⃣ RESPONSE =================
     response = {
         "screening_id": screening.id,
+        "image_url": image_url,
         "prob_normal": screening.prob_normal,
         "prob_cataract": screening.prob_cataract,
         "decision": {
@@ -83,16 +113,17 @@ def create_screening(
             "confidence_level": screening.confidence_level,
             "confidence_score": screening.confidence_score,
             "message": screening.explanation["message"],
-        }
+        },
     }
 
     if referral_data:
         response["referral"] = {
             "specialty": referral_data["specialty"],
-            "urgency": referral_data["urgency"]
+            "urgency": referral_data["urgency"],
         }
 
     return response
+
 
 @router.get("/my")
 def get_my_screenings(
