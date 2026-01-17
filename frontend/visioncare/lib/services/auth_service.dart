@@ -44,6 +44,7 @@ class AuthService {
         await _storage.write(key: 'user_id', value: user['id']);
         await _storage.write(key: 'user_role', value: normalizedRole);
         await _storage.write(key: 'user_name', value: user['full_name']);
+        await _storage.write(key: 'user_email', value: user['email']);
 
         return true;
       }
@@ -104,7 +105,12 @@ class AuthService {
 
   static Future<String?> getUserId() async {
     return await _storage.read(key: 'user_id');
+  } 
+
+  static Future<String?> getUserEmail() async {
+    return await _storage.read(key: 'user_email');
   }
+
 
 }
 

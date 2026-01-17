@@ -19,8 +19,6 @@ class _ScreeningDetailScreenState extends State<ScreeningDetailScreen> {
   late Future<Map<String, dynamic>> _detailFuture;
   bool _isDoctor = false;
 
-  static const String _baseUrl = 'https://visioncare.onrender.com';
-
   @override
   void initState() {
     super.initState();
@@ -158,12 +156,7 @@ class _ScreeningDetailScreenState extends State<ScreeningDetailScreen> {
           final doctorReview = data['doctor_review'];
           final rawImagePath = data['image_url'];
 
-          String? imageUrl;
-          if (rawImagePath != null && rawImagePath is String) {
-            imageUrl =
-                '$_baseUrl/${rawImagePath.replaceAll('\\', '/')}';
-                debugPrint('IMAGE URL => $imageUrl');
-          }
+          final imageUrl = rawImagePath as String?;
 
 
 
@@ -177,19 +170,29 @@ class _ScreeningDetailScreenState extends State<ScreeningDetailScreen> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.network(
-                      imageUrl,
-                      width: double.infinity,
-                      height: 220,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) {
-                        return const Center(
-                          child: Text(
-                            'Failed to load image',
-                            style: TextStyle(color: Colors.red),
+                            imageUrl,
+                            width: double.infinity,
+                            height: 220,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const SizedBox(
+                                height: 220,
+                                child: Center(child: CircularProgressIndicator()),
+                              );
+                            },
+                            errorBuilder: (_, __, ___) {
+                              return const SizedBox(
+                                height: 220,
+                                child: Center(
+                                  child: Text(
+                                    'Failed to load image',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ),
                   const SizedBox(height: 20),
                 ],

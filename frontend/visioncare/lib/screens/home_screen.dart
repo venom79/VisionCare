@@ -147,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: 'Reviewed Cases',
                       icon: Icons.fact_check,
                       onTap: () {
-                        // TODO: Doctor dashboard
+                        Navigator.pushNamed(context, AppRoutes.doctorReviewed);
                       },
                     ),
 
@@ -156,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: 'Profile',
                     icon: Icons.person,
                     onTap: () {
-                      // optional profile screen later
+                      Navigator.pushNamed(context, AppRoutes.profile);
                     },
                   ),
                 ],

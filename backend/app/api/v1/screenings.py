@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Depends
+from fastapi import APIRouter, UploadFile, File, Depends,HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -17,6 +17,7 @@ from app.models.referral import Referral
 from app.services.explanation_service import cataract_decision
 from app.services.referral_service import create_referral_data
 from app.services.ml_client import predict_image
+from app.services.trend_service import calculate_trend
 
 
 router = APIRouter(prefix="/screenings", tags=["Screenings"])
@@ -146,6 +147,7 @@ def get_my_screenings(
             "result": s.result,
             "confidence_level": s.confidence_level,
             "confidence_score": s.confidence_score,
+            "status": s.status,
         }
         for s in screenings
     ]

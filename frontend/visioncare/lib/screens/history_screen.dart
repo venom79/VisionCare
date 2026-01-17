@@ -31,6 +31,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Colors.green;
   }
 
+  bool _isDoctorReviewed(dynamic item) {
+    final status = item['status'];
+    return status != null && status == 'REVIEWED';
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,12 +82,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 margin: const EdgeInsets.only(bottom: 12),
                 child: ListTile(
                   leading: const Icon(Icons.visibility),
-                  title: Text(
-                    result,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: _resultColor(result),
-                    ),
+                  title: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          result,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: _resultColor(result),
+                          ),
+                        ),
+                      ),
+                      if (_isDoctorReviewed(item))
+                        const Icon(
+                          Icons.verified,
+                          color: Colors.blue,
+                          size: 20,
+                        ),
+                    ],
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,6 +115,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           'Date: ${_formatDate(createdAt)}',
                           style: const TextStyle(fontSize: 12),
                         ),
+                      if (_isDoctorReviewed(item)) ...[
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Doctor reviewed',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                   onTap: () {
@@ -107,6 +136,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     );
                   },
                 ),
+
               );
             },
           );

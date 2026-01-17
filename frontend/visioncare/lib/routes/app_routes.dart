@@ -7,8 +7,8 @@ import '../screens/cataract_scan_screen.dart';
 import '../screens/history_screen.dart';
 import '../screens/screening_detail_screen.dart';
 import '../screens/doctor_pending_screen.dart';
-
-
+import '../screens/profile_screen.dart';
+import '../screens/doctor_reviewed_screen.dart';
 
 
 class AppRoutes {
@@ -20,7 +20,8 @@ class AppRoutes {
   static const history = '/history';
   static const screeningDetail = '/screening-detail';
   static const doctorPending = '/doctor/pending';
-
+  static const profile = '/profile';
+  static const doctorReviewed = '/doctor-reviewed';
 
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -50,6 +51,10 @@ class AppRoutes {
         return MaterialPageRoute(
           builder: (_) => const DoctorPendingScreen(),
         );
+      case profile:
+        return MaterialPageRoute(builder: (_) => const ProfileScreen());
+      case doctorReviewed:
+        return MaterialPageRoute(builder: (_) => const DoctorReviewedScreen());
 
 
       default:
