@@ -64,7 +64,8 @@ class AuthService {
     final response = await http.post(
       Uri.parse('$_baseUrl/api/v1/auth/register'),
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Accept': 'application/json',
       },
       body: jsonEncode({
         'full_name': fullName,
