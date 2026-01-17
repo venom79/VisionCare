@@ -13,7 +13,7 @@ This repository contains the **complete working system**:
 
 ### 📱 Download Android App (APK)
 👉 **Direct Download:**  
-https://github.com/venom79/VisionCare/releases/download/v1.0/VisionCare-v1.1.apk
+https://github.com/venom79/VisionCare/releases/download/v1.1/VisionCare-v1.1.apk
 
 **How to install:**
 1. Download the APK on your Android phone  
