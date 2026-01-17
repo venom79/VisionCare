@@ -69,8 +69,12 @@ Thumbs.db
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-build/
 coverage/
+
+# Ignore all build outputs EXCEPT Flutter web
+build/*
+!build/web/
+!build/web/**
 
 # ===============================
 # Flutter iOS / Android build

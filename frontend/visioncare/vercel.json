@@ -1,5 +1,14 @@
 {
-  "buildCommand": "bash vercel-build.sh",
-  "outputDirectory": "build/web",
-  "framework": null
+  "builds": [
+    {
+      "src": "build/web/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/build/web/index.html"
+    }
+  ]
 }
