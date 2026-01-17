@@ -12,33 +12,35 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/api/v1/auth/login'),
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: {
-        'username': email, // email as username
-        'password': password,
-      },
-    );
+    try {
+      final cleanEmail = email.trim();
+      final cleanPassword = password.trim();
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/api/v1/auth/login'),
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: Uri(queryParameters: {
+              'username': cleanEmail,
+              'password': cleanPassword,
+            }).query,
+          )
+          .timeout(const Duration(seconds: 10));
 
-      final token = data['access_token'];
-      final user = data['user'];
 
-      if (token != null && user != null) {
-        // 🔹 Normalize role
-        final rawRole = user['role'].toString().toUpperCase();
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
 
-        String normalizedRole;
-        if (rawRole.contains('DOCTOR') || rawRole.contains('OPHTHALMOLOGY')) {
-          normalizedRole = 'DOCTOR';
-        } else {
-          normalizedRole = 'PATIENT';
-        }
+        final token = data['access_token'];
+        final user = data['user'];
+
+        if (token == null || user == null) return false;
+
+        final role = user['role'].toString().toUpperCase();
+        final normalizedRole =
+            role.contains('DOCTOR') ? 'DOCTOR' : 'PATIENT';
 
         await _storage.write(key: _tokenKey, value: token);
         await _storage.write(key: 'user_id', value: user['id']);
@@ -48,10 +50,13 @@ class AuthService {
 
         return true;
       }
-    }
 
-    return false;
+      return false;
+    } catch (e) {
+      return false;
+    }
   }
+
 
 
  // ================= REGISTER =================

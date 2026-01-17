@@ -158,13 +158,12 @@ class _LoginPageState extends State<LoginPage> {
             ),
           );
 
-          // 🔑 WEB vs MOBILE RENDERING
+          // 📱 Mobile
           if (!isWeb) {
-            // 📱 MOBILE — unchanged behavior
             return SingleChildScrollView(child: content);
           }
 
-          // 💻 WEB — centered card layout
+          // 💻 Web
           return Center(
             child: SingleChildScrollView(
               child: ConstrainedBox(
