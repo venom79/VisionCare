@@ -72,9 +72,9 @@ Thumbs.db
 coverage/
 
 # Ignore all build outputs EXCEPT Flutter web
-build/*
-!build/web/
-!build/web/**
+frontend/visioncare/build/*
+!frontend/visioncare/build/web/
+!frontend/visioncare/build/web/**
 
 # ===============================
 # Flutter iOS / Android build
