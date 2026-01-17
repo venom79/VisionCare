@@ -25,9 +25,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final role = await AuthService.getUserRole();
     final email = await AuthService.getUserEmail(); 
 
-
-    print('$name $role $email');
-
     if (!mounted) return;
 
     setState(() {

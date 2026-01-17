@@ -4,13 +4,17 @@ class ActionCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final VoidCallback onTap;
+  final bool compact;
+
 
   const ActionCard({
     super.key,
     required this.title,
     required this.icon,
     required this.onTap,
+    this.compact = false,
   });
+
 
   @override
   Widget build(BuildContext context) {

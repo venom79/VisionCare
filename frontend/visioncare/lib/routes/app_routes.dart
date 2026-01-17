@@ -9,6 +9,8 @@ import '../screens/screening_detail_screen.dart';
 import '../screens/doctor_pending_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/doctor_reviewed_screen.dart';
+import '../screens/progress_screen.dart';
+import '../screens/doctor_metrics_screen.dart';
 
 
 class AppRoutes {
@@ -22,6 +24,8 @@ class AppRoutes {
   static const doctorPending = '/doctor/pending';
   static const profile = '/profile';
   static const doctorReviewed = '/doctor-reviewed';
+  static const progress = '/progress';
+  static const doctorMetrics = '/doctor-metrics';
 
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -55,7 +59,10 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
       case doctorReviewed:
         return MaterialPageRoute(builder: (_) => const DoctorReviewedScreen());
-
+      case progress:
+        return MaterialPageRoute(builder: (_) => const ProgressScreen());
+      case doctorMetrics:
+        return MaterialPageRoute(builder: (_) => const DoctorMetricsScreen());
 
       default:
         return MaterialPageRoute(

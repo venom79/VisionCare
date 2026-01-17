@@ -29,14 +29,31 @@ class ScreeningService {
     );
 
     final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
+      final response = await http.Response.fromStream(streamedResponse);
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception(
-        'Screening failed (${response.statusCode}): ${response.body}',
-      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception(
+          'Screening failed (${response.statusCode}): ${response.body}',
+        );
+      }
     }
+
+    static Future<Map<String, dynamic>> getProgress() async {
+    final token = await AuthService.getToken();
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/v1/screenings/progress'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+
+    throw Exception('Failed to load progress');
   }
 }
